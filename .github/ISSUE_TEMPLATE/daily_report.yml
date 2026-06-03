@@ -1,0 +1,29 @@
+name: 📝 Báo cáo ngày (Daily Report)
+description: Form báo cáo tiến độ học tập hàng ngày
+title: "Báo cáo ngày: [YYYY-MM-DD]"
+labels: ["daily-report"]
+body:
+  - type: textarea
+    id: learned
+    attributes:
+      label: 🧠 Hôm nay bạn đã học được gì?
+      description: Liệt kê các khái niệm, bài lab, nội dung đã hoàn thành.
+      placeholder: "Ví dụ: Hoàn thành phần Core Concepts, làm lab về Pods ngốn 30 phút..."
+    validations:
+      required: true
+  - type: textarea
+    id: blockers
+    attributes:
+      label: 🚧 Có khó khăn / vướng mắc gì không?
+      description: Các lỗi gặp phải, khái niệm chưa hiểu rõ cần xem lại sau.
+      placeholder: "Ví dụ: Lỗi ImagePullBackOff do gõ sai tên image, chưa hiểu rõ về livenessProbe..."
+    validations:
+      required: false
+  - type: textarea
+    id: tomorrow
+    attributes:
+      label: 📅 Kế hoạch ngày mai là gì?
+      description: Mục tiêu của ngày tiếp theo.
+      placeholder: "Ví dụ: Chuyển sang học về ReplicaSets và Deployments."
+    validations:
+      required: true

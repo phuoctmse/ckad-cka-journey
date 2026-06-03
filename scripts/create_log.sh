@@ -15,14 +15,32 @@ if [ -f "$NEW_LOG_FILE" ]; then
     exit 1
 fi
 
-# Chép nội dung từ TEMPLATE và thay thế biến {{DATE}} bằng ngày hiện tại
-cp "$TEMPLATE_FILE" "$NEW_LOG_FILE"
+# Bắt đầu hỏi người dùng nhập dưới dạng ngôn ngữ tự nhiên
+echo "📝 BẮT ĐẦU NHẬP BÁO CÁO NGÀY $TODAY (Nhấn Enter để qua câu tiếp theo):"
+echo "------------------------------------------------------"
 
-# Lệnh sed khác nhau một chút giữa Mac (BSD) và Linux (GNU), ở đây dùng hướng tương thích bash tiêu chuẩn
-if sed --version >/dev/null 2>&1; then
-  sed -i "s/{{DATE}}/$TODAY/g" "$NEW_LOG_FILE"
-else
-  sed -i '' "s/{{DATE}}/$TODAY/g" "$NEW_LOG_FILE"
-fi
+read -p "🧠 Hôm nay bạn đã học được gì? : " LEARNED
+read -p "🚧 Có khó khăn / vướng mắc gì không? : " BLOCKERS
+read -p "📅 Kế hoạch ngày mai là gì? : " TOMORROW
 
+# Điền nội dung mặc định nếu người dùng để trống
+LEARNED=${LEARNED:-"Không ghi chú gì thêm."}
+BLOCKERS=${BLOCKERS:-"Không có vướng mắc."}
+TOMORROW=${TOMORROW:-"Tiếp tục theo lộ trình học tập."}
+
+# Tạo file markdown mới bằng cách chèn trực tiếp nội dung vừa nhập
+cat <<EOF > "$NEW_LOG_FILE"
+# Báo cáo ngày: $TODAY
+
+## 🧠 Đã học được gì
+- $LEARNED
+
+## 🚧 Khó khăn / Vướng mắc
+- $BLOCKERS
+
+## 📅 Kế hoạch ngày mai
+- $TOMORROW
+EOF
+
+echo "------------------------------------------------------"
 echo "✅ Đã tạo thành công nhật ký cho ngày hôm nay: $NEW_LOG_FILE"
