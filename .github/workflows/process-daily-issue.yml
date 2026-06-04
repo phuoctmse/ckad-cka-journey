@@ -31,7 +31,9 @@ jobs:
           FILE="daily-logs/${DATE}-issue-${{ github.event.issue.number }}.md"
           
           # Đổ dữ liệu từ comment vào file Markdown
-          echo "# Báo cáo task: $ISSUE_TITLE" > "$FILE"
+          # Escape square brackets in the issue title to avoid markdown reference link warnings (MD052)
+          SAFE_TITLE=$(printf '%s' "$ISSUE_TITLE" | sed 's/\[/\\\[/g; s/\]/\\\]/g')
+          echo "# Báo cáo task: $SAFE_TITLE" > "$FILE"
           echo "" >> "$FILE"
           echo "$COMMENT_BODY" >> "$FILE"
           
