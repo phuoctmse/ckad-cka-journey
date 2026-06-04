@@ -1,10 +1,20 @@
-# Báo cáo ngày: {{DATE}}
+---
+📅 Ngày: {{DATE}}
+⏱️ Thời gian học: [X phút/giờ]
+📌 Topic: [tên topic]
+📚 Nguồn: [Udemy KodeKloud / LabEx / Killer.sh / tự practice]
 
-## 🧠 Đã học được gì
+✅ Đã làm được:
 - ...
 
-## 🚧 Khó khăn / Vướng mắc
+❓ Còn mơ hồ / chưa hiểu:
 - ...
 
-## 📅 Kế hoạch ngày mai
+🧪 Lab/Practice đã làm:
 - ...
+
+😤 Cảm giác hôm nay: [😤 Struggle / 😐 Ổn / 😊 Tốt / 🔥 Xuất sắc]
+
+💬 Ghi chú thêm (nếu có):
+- ...
+---

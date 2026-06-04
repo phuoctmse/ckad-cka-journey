@@ -3,27 +3,66 @@ description: Form báo cáo tiến độ học tập hàng ngày
 title: "Báo cáo ngày: [YYYY-MM-DD]"
 labels: ["daily-report"]
 body:
+  - type: input
+    id: time
+    attributes:
+      label: ⏱️ Thời gian học
+      placeholder: "Ví dụ: 2 giờ"
+    validations:
+      required: true
+  - type: input
+    id: topic
+    attributes:
+      label: 📌 Topic
+      placeholder: "Ví dụ: Pods, ReplicaSets, Services"
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: 📚 Nguồn
+      placeholder: "Ví dụ: Udemy KodeKloud / LabEx / Tự practice"
+    validations:
+      required: true
   - type: textarea
     id: learned
     attributes:
-      label: 🧠 Hôm nay bạn đã học được gì?
-      description: Liệt kê các khái niệm, bài lab, nội dung đã hoàn thành.
-      placeholder: "Ví dụ: Hoàn thành phần Core Concepts, làm lab về Pods ngốn 30 phút..."
+      label: ✅ Đã làm được
+      description: Liệt kê những gì nắm được.
+      placeholder: "Ví dụ: Hoàn thành phần Core Concepts..."
     validations:
       required: true
   - type: textarea
     id: blockers
     attributes:
-      label: 🚧 Có khó khăn / vướng mắc gì không?
-      description: Các lỗi gặp phải, khái niệm chưa hiểu rõ cần xem lại sau.
-      placeholder: "Ví dụ: Lỗi ImagePullBackOff do gõ sai tên image, chưa hiểu rõ về livenessProbe..."
-    validations:
-      required: false
-  - type: textarea
-    id: tomorrow
-    attributes:
-      label: 📅 Kế hoạch ngày mai là gì?
-      description: Mục tiêu của ngày tiếp theo.
-      placeholder: "Ví dụ: Chuyển sang học về ReplicaSets và Deployments."
+      label: ❓ Còn mơ hồ / chưa hiểu
+      description: Liệt kê thẳng thắn.
+      placeholder: "Ví dụ: Chưa hiểu rõ về livenessProbe..."
     validations:
       required: true
+  - type: textarea
+    id: practice
+    attributes:
+      label: 🧪 Lab/Practice đã làm
+      description: Command nào đã chạy, bài lab nào trên LabEx.
+      placeholder: "Ví dụ: kubectl run nginx --image=nginx..."
+    validations:
+      required: true
+  - type: dropdown
+    id: feeling
+    attributes:
+      label: 😤 Cảm giác hôm nay
+      options:
+        - "😤 Struggle"
+        - "😐 Ổn"
+        - "😊 Tốt"
+        - "🔥 Xuất sắc"
+    validations:
+      required: true
+  - type: textarea
+    id: note
+    attributes:
+      label: 💬 Ghi chú thêm (nếu có)
+      description: Bất kỳ thứ gì.
+    validations:
+      required: false
