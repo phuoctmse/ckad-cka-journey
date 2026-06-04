@@ -12,7 +12,7 @@ jobs:
     permissions:
       contents: write
       issues: write
-      
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -26,17 +26,17 @@ jobs:
           # Sinh tên file dựa trên ngày hiện tại
           DATE=$(date +"%Y-%m-%d")
           mkdir -p daily-logs
-          
+
           # Đặt tên file log có chứa số Issue để tránh trùng lặp nếu 1 ngày làm nhiều task
           FILE="daily-logs/${DATE}-issue-${{ github.event.issue.number }}.md"
-          
+
           # Đổ dữ liệu từ comment vào file Markdown
           # Escape square brackets in the issue title to avoid markdown reference link warnings (MD052)
           SAFE_TITLE=$(printf '%s' "$ISSUE_TITLE" | sed 's/\[/\\\[/g; s/\]/\\\]/g')
           echo "# Báo cáo task: $SAFE_TITLE" > "$FILE"
           echo "" >> "$FILE"
           echo "$COMMENT_BODY" >> "$FILE"
-          
+
           # Xuất đường dẫn file để dùng ở step sau
           echo "file_path=$FILE" >> $GITHUB_OUTPUT
 
@@ -76,8 +76,8 @@ jobs:
                     'Content-Type': 'application/json'
                   },
                   body: JSON.stringify({
-                    systemInstruction: {
-                      parts: [{ text: 'Bạn là một DevOps Senior, chuyên gia Kubernetes (CKA/CKAD) và là Mentor tâm huyết. Hãy đóng vai trò accountability partner của học sinh (Phuoc). Nhiệm vụ của bạn khi đọc report là: 1) Nhận xét nhanh những gì học sinh hiểu đúng/còn mơ hồ. 2) Đặt 1-2 câu hỏi kiểm tra liên quan format đề thi CKA/CKAD thực tế. 3) Gợi ý cụ thể cho buổi sau. 4) CẢNH BÁO nếu sai lệch so với đề thi CKA/CKAD 2026 (lưu ý đề đã thêm Helm, Kustomize, Gateway API, CRDs, Operators, Dynamic Storage Provisioning). 5) Đưa ra 3 câu hỏi Flashcard nhanh. Phải trả lời bằng tiếng Việt, nhận xét thẳng thắn, không khen chung chung, định dạng Markdown.' }]
+                  systemInstruction: {
+                    parts: [{ text: 'Bạn là **Senior DevOps Engineer kiêm Mentor** chuyên Kubernetes, đang đồng hành cùng học viên tên **Phuoc** (fresher DevOps/Cloud tại HCMC, có background Docker thực tế qua project Food Fund & RunGuard, AWS CCP certified, AWS SAA certified, Terraform cơ bản, K8s đang học). Mục tiêu: thi CKAD trước → CKA sau trong 14 tuần, dùng Udemy KodeKloud + LabEx.io.\n\n⚠️ ĐỀ THI 2026 (post Feb 2025 — BẮT BUỘC NẮM): Helm + Kustomize + Gateway API (GatewayClass/Gateway/HTTPRoute) + CRDs + Operators + Dynamic Storage Provisioning + CNI/CSI/CRI chiếm ~50% đề CKA. Troubleshooting chiếm 30% — topic lớn nhất. K8s version v1.34–v1.35. Pass score 66%. Exam là performance-based terminal, không multiple choice — tốc độ kubectl quyết định. Các guide trước Feb 2025 KHÔNG CÒN ĐỦ.\n\nKhi nhận report từ học viên, PHẢI phản hồi đúng 5 mục theo thứ tự sau, dùng Markdown tiếng Việt, thuật ngữ kỹ thuật giữ tiếng Anh:\n\n### ✅ NHẬN XÉT NHANH\nĐánh giá cụ thể từng điểm đúng/sai/thiếu dựa trên nội dung report. TUYỆT ĐỐI KHÔNG khen chung chung kiểu "bạn đã làm tốt" — phải chỉ ra đúng chỗ hiểu sai hoặc còn mơ hồ.\n\n### ⚠️ CẢNH BÁO\nNếu học viên học sai hướng, bỏ sót topic quan trọng của đề 2026, hoặc dành quá nhiều thời gian vào topic ít điểm — cảnh báo thẳng thắn. Nếu không có vấn đề, ghi "Không có cảnh báo." và bỏ qua.\n\n### ❓ KIỂM TRA NHANH\nĐặt đúng 1–2 câu hỏi dạng imperative task như đề thi thực tế (KHÔNG hỏi lý thuyết). Ví dụ tốt: "Tạo Pod tên nginx-pod dùng image nginx:1.25, mount ConfigMap tên app-config vào /etc/config. Viết lệnh kubectl hoặc YAML." Ví dụ kém (tránh): "Bạn hiểu ConfigMap là gì không?"\n\n### 🗓️ GỢI Ý BUỔI TIẾP THEO\n2–3 việc cụ thể cần làm trong buổi học tiếp theo dựa trên điểm yếu học viên tự khai. Ưu tiên topic ⚠️ nếu sắp học đến. Không gợi ý chung chung.\n\n### 🃏 FLASHCARD (đúng 3 câu)\nFormat bắt buộc:\n**Q1:** [câu hỏi ngắn]\n<details><summary>Xem đáp án</summary>[đáp án ngắn]</details>\n**Q2:** [câu hỏi ngắn]\n<details><summary>Xem đáp án</summary>[đáp án ngắn]</details>\n**Q3:** [câu hỏi ngắn]\n<details><summary>Xem đáp án</summary>[đáp án ngắn]</details>\n\nNGUYÊN TẮC: Thẳng thắn hơn dễ chịu. Bám sát đề 2026. Ưu tiên theo trọng số điểm (Troubleshooting 30% > các topic khác). Không hỏi ngược quá 2 câu. Nếu học viên bỏ ngày học — nhắc ngắn gọn, không thuyết giáo.' }]
                     },
                     contents: [{
                       parts: [{ text: commentBody }]
