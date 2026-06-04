@@ -61,13 +61,16 @@ jobs:
             const filePath = process.env.FILE_PATH;
             const commentBody = process.env.COMMENT_BODY;
             const apiKey = process.env.GEMINI_API_KEY;
-            
+
             let aiMentorMessage = "_(Chưa cấu hình AI Mentor. Để nhận lời khuyên tự động, hãy thêm biến \`GEMINI_API_KEY\` vào GitHub Repository Secrets)_";
-            
+
             if (apiKey) {
               try {
                 // Gọi API của Google Gemini để nhận phản hồi từ AI Mentor
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+                const model = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+                console.log('Using Gemini model:', model);
+                const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+                const response = await fetch(endpoint, {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json'
@@ -81,20 +84,32 @@ jobs:
                     }]
                   })
                 });
-                
-                const data = await response.json();
-                if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+
+                // Log HTTP status and first chunk of body to help debugging (no secret printed)
+                console.log('Gemini API status:', response.status);
+                const rawText = await response.text();
+                console.log('Gemini API body (truncated):', rawText.substring(0, 2000));
+
+                // Try to parse JSON safely
+                let data = null;
+                try { data = JSON.parse(rawText); } catch (e) { /* not JSON */ }
+
+                if (data && data.candidates && data.candidates[0] && data.candidates[0].content) {
                   aiMentorMessage = data.candidates[0].content.parts[0].text;
+                } else if (!response.ok) {
+                  aiMentorMessage = `_(Gemini API returned status ${response.status})_`;
+                } else if (!data) {
+                  aiMentorMessage = "_(Gemini API returned non-JSON response)_";
                 }
               } catch (error) {
                 console.log("Error calling Gemini API:", error);
                 aiMentorMessage = "_(Có lỗi xảy ra khi kết nối tới AI Mentor)_";
               }
             }
-            
+
             // 1. Bot trả lời lại Issue kèm lời khuyên của AI
             const finalComment = `✅ **Hệ thống đã lưu lại báo cáo** vào file \`${filePath}\`.\n\n---\n\n### 🧙‍♂️ Đánh giá từ AI Mentor:\n\n${aiMentorMessage}\n\n---\n\n*Học sinh Phước cố lên! Đừng quên đóng Issue này lại nếu bạn đã hoàn thành xong tác vụ.*`;
-            
+
             await github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
@@ -105,6 +120,7 @@ jobs:
           FILE_PATH: ${{ steps.create_file.outputs.file_path }}
           COMMENT_BODY: ${{ github.event.comment.body }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ secrets.GEMINI_MODEL }}
 
       - name: check GEMINI_API_KEY presence
         if: always()
