@@ -1,13 +1,13 @@
-name: 🤖 Process Daily Report Issue
+name: 🤖 Process Daily Report Comment
 
 on:
-  issues:
-    types: [opened]
+  issue_comment:
+    types: [created]
 
 jobs:
   generate-markdown:
-    # Chỉ chạy pipeline này nếu Issue được gắn nhãn 'daily-report'
-    if: contains(github.event.issue.labels.*.name, 'daily-report')
+    # Chỉ chạy pipeline nếu comment không phải của bot và chứa từ khoá nhận diện báo cáo
+    if: false == contains(github.event.comment.user.login, 'bot') && contains(github.event.comment.body, 'Thời gian học')
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -17,21 +17,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Tạo file Markdown từ Issue
+      - name: Tạo/Cập nhật file Markdown từ Comment
         id: create_file
         env:
           ISSUE_TITLE: ${{ github.event.issue.title }}
-          ISSUE_BODY: ${{ github.event.issue.body }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
         run: |
           # Sinh tên file dựa trên ngày hiện tại
           DATE=$(date +"%Y-%m-%d")
           mkdir -p daily-logs
-          FILE="daily-logs/$DATE.md"
           
-          # Đổ dữ liệu từ Issue form vào file Markdown
-          echo "# $ISSUE_TITLE" > "$FILE"
+          # Đặt tên file log có chứa số Issue để tránh trùng lặp nếu 1 ngày làm nhiều task
+          FILE="daily-logs/${DATE}-issue-${{ github.event.issue.number }}.md"
+          
+          # Đổ dữ liệu từ comment vào file Markdown
+          echo "# Báo cáo task: $ISSUE_TITLE" > "$FILE"
           echo "" >> "$FILE"
-          echo "$ISSUE_BODY" >> "$FILE"
+          echo "$COMMENT_BODY" >> "$FILE"
           
           # Xuất đường dẫn file để dùng ở step sau
           echo "file_path=$FILE" >> $GITHUB_OUTPUT
@@ -41,7 +43,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add daily-logs/
-          git commit -m "docs(report): tự động thêm báo cáo ngày ${{ steps.create_file.outputs.file_path }} (Từ Issue #${{ github.event.issue.number }})"
+          git commit -m "docs(report): tự động lưu báo cáo ngày ${{ steps.create_file.outputs.file_path }} (Từ comment Issue #${{ github.event.issue.number }})"
           git push
 
       - name: AI Mentor & Bot Comment
@@ -49,7 +51,7 @@ jobs:
         with:
           script: |
             const filePath = process.env.FILE_PATH;
-            const issueBody = process.env.ISSUE_BODY;
+            const commentBody = process.env.COMMENT_BODY;
             const apiKey = process.env.GEMINI_API_KEY;
             
             let aiMentorMessage = "_(Chưa cấu hình AI Mentor. Để nhận lời khuyên tự động, hãy thêm biến \`GEMINI_API_KEY\` vào GitHub Repository Secrets)_";
@@ -67,7 +69,7 @@ jobs:
                       parts: [{ text: 'Bạn là một DevOps Senior, chuyên gia Kubernetes (CKA/CKAD) và là Mentor tâm huyết. Hãy đóng vai trò accountability partner của học sinh (Phuoc). Nhiệm vụ của bạn khi đọc report là: 1) Nhận xét nhanh những gì học sinh hiểu đúng/còn mơ hồ. 2) Đặt 1-2 câu hỏi kiểm tra liên quan format đề thi CKA/CKAD thực tế. 3) Gợi ý cụ thể cho buổi sau. 4) CẢNH BÁO nếu sai lệch so với đề thi CKA/CKAD 2026 (lưu ý đề đã thêm Helm, Kustomize, Gateway API, CRDs, Operators, Dynamic Storage Provisioning). 5) Đưa ra 3 câu hỏi Flashcard nhanh. Phải trả lời bằng tiếng Việt, nhận xét thẳng thắn, không khen chung chung, định dạng Markdown.' }]
                     },
                     contents: [{
-                      parts: [{ text: issueBody }]
+                      parts: [{ text: commentBody }]
                     }]
                   })
                 });
@@ -83,7 +85,7 @@ jobs:
             }
             
             // 1. Bot trả lời lại Issue kèm lời khuyên của AI
-            const finalComment = `✅ **GitHub Actions Bot:** Cảm ơn bạn! Báo cáo hôm nay đã được lưu tự động vào file \`${filePath}\`.\n\n---\n\n### 🧙‍♂️ Đánh giá từ AI Mentor:\n\n${aiMentorMessage}\n\n---\n\n*Tôi sẽ đóng Issue này lại để thẻ công việc tự động chuyển sang cột **Done** trên Kanban! 🎉*`;
+            const finalComment = `✅ **Hệ thống đã lưu lại báo cáo** vào file \`${filePath}\`.\n\n---\n\n### 🧙‍♂️ Đánh giá từ AI Mentor:\n\n${aiMentorMessage}\n\n---\n\n*Học sinh Phước cố lên! Đừng quên đóng Issue này lại nếu bạn đã hoàn thành xong tác vụ.*`;
             
             await github.rest.issues.createComment({
               issue_number: context.issue.number,
@@ -91,15 +93,7 @@ jobs:
               repo: context.repo.repo,
               body: finalComment
             });
-            
-            // 2. Tự động đóng Issue
-            await github.rest.issues.update({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              state: 'closed'
-            });
         env:
           FILE_PATH: ${{ steps.create_file.outputs.file_path }}
-          ISSUE_BODY: ${{ github.event.issue.body }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
