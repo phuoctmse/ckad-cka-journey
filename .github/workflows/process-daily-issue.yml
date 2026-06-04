@@ -42,9 +42,15 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add daily-logs/
-          git commit -m "docs(report): tự động lưu báo cáo ngày ${{ steps.create_file.outputs.file_path }} (Từ comment Issue #${{ github.event.issue.number }})"
-          git push
+          git add daily-logs/ || true
+
+          # Nếu không có thay đổi đã staged, bỏ qua commit để tránh lỗi 'nothing to commit'
+          if git diff --cached --quiet; then
+            echo "⚠️  Không có thay đổi để commit. Bỏ qua bước commit/push."
+          else
+            git commit -m "docs(report): tự động lưu báo cáo ngày ${{ steps.create_file.outputs.file_path }} (Từ comment Issue #${{ github.event.issue.number }})"
+            git push
+          fi
 
       - name: AI Mentor & Bot Comment
         uses: actions/github-script@v7
