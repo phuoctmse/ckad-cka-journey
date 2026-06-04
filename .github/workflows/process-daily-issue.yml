@@ -106,7 +106,7 @@ jobs:
           COMMENT_BODY: ${{ github.event.comment.body }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
 
-      - name: Debug: check GEMINI_API_KEY presence
+      - name: check GEMINI_API_KEY presence
         if: always()
         run: |
           if [ -z "$GEMINI_API_KEY" ]; then
