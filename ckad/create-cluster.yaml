@@ -1,0 +1,41 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+
+# --- Mạng ------------------------------------------------------------
+# apiServerAddress để 127.0.0.1 là mặc định, và docs khuyên chỉ expose ra
+# loopback. apiServerPort cố định để kubeconfig không hỏng khi Docker
+# Desktop khởi động lại (mặc định là port ngẫu nhiên). Nếu 6443 đã bị
+# chiếm trên máy thì đổi sang port khác, ví dụ 6444.
+networking:
+  apiServerAddress: "127.0.0.1"
+  apiServerPort: 6443
+
+# --- Node: 1 control-plane + 2 worker --------------------------------
+nodes:
+  - role: control-plane
+    extraPortMappings:
+      # NodePort: containerPort phải TRÙNG nodePort của Service. Đặt rõ khi tạo
+      # Service, ví dụ `nodePort: 30080`. Một mapping ở control-plane vẫn tới
+      # được pod ở worker, vì kube-proxy chạy trên mọi node.
+      - containerPort: 30080
+        hostPort: 30080
+        listenAddress: "127.0.0.1"
+        protocol: TCP
+      - containerPort: 30081
+        hostPort: 30081
+        listenAddress: "127.0.0.1"
+        protocol: TCP
+    # Ingress (tuần 3): chỉ cần nếu bạn tự cài ingress controller trên kind
+    # và muốn curl localhost. Bỏ comment hai khối dưới TRƯỚC khi tạo cluster.
+    # Hướng dẫn cài controller: xem trang Ingress hiện hành của kind
+    # (ingress-nginx đã retire 3/2026, đừng làm theo hướng dẫn cũ).
+    # - containerPort: 80
+    #   hostPort: 80
+    #   listenAddress: "127.0.0.1"
+    #   protocol: TCP
+    # - containerPort: 443
+    #   hostPort: 443
+    #   listenAddress: "127.0.0.1"
+    #   protocol: TCP
+  - role: worker
+  - role: worker
